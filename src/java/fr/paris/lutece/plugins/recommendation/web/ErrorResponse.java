@@ -31,40 +31,32 @@
  *
  * License 1.0
  */
-package fr.paris.lutece.plugins.recommendation.service;
-
-import fr.paris.lutece.test.LuteceTestCase;
-
-import org.apache.mahout.cf.taste.recommender.RecommendedItem;
-
-import org.junit.Test;
-
-import java.util.List;
+package fr.paris.lutece.plugins.recommendation.web;
 
 
 /**
- *
- * @author pierre
+ * ErrorResponse
  */
-public class RecommendationServiceTest extends LuteceTestCase
+public class ErrorResponse extends ServletResponse
 {
+    String _strMessage;
+
     /**
-     * Test of getRecommendations method, of class RecommendationService.
+     *
+     * @param strMessage The message
      */
-    @Test
-    public void testGetRecommendations(  )
+    public ErrorResponse( String strMessage )
     {
-        System.out.println( "getRecommendations" );
+        super( "ERROR" );
+        _strMessage = strMessage;
+    }
 
-        String strRecommender = "test";
-        long lUserID = 2L;
-        int nCount = 3;
-        RecommendationService instance = RecommendationService.instance(  );
-        List<RecommendedItem> recommendations = instance.getRecommendations( strRecommender, lUserID, nCount );
-
-        for ( RecommendedItem recommendation : recommendations )
-        {
-            System.out.println( recommendation );
-        }
+    /**
+     *
+     * @return The message
+     */
+    public String getMessage(  )
+    {
+        return _strMessage;
     }
 }

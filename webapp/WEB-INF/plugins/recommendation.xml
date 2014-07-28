@@ -19,15 +19,12 @@
         <max-core-version/>	
     </core-version-dependency>
 
-    <!-- Admin features parameters -->
-    <admin-features>
-    </admin-features>    
+    <servlets>
+       <servlet>
+            <servlet-name>recommendationServlet</servlet-name>
+            <url-pattern>/servlet/plugins/recommendation/</url-pattern>
+            <servlet-class>fr.paris.lutece.plugins.recommendation.web.RecommendationServlet</servlet-class>
+        </servlet>
+    </servlets>
 
-    <!-- XPages parameters -->
-    <applications>
-    </applications>
-
-    <!-- Portlet parameters -->
-    <portlets>
-   </portlets>
 </plug-in>

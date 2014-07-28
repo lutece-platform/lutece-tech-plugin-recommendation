@@ -77,11 +77,15 @@ public class RecommendationService
     {
     }
 
+    /**
+     *
+     * @return
+     */
     public static synchronized RecommendationService instance(  )
     {
         if ( _singleton == null )
         {
-            _singleton = new RecommendationService();
+            _singleton = new RecommendationService(  );
             _singleton.init(  );
         }
 
@@ -98,7 +102,7 @@ public class RecommendationService
         for ( String strRecommender : recommenders )
         {
             UserBasedRecommender recommender = initRecommender( strRecommender.trim(  ) );
-            _mapRecommenders.put( strRecommender , recommender);
+            _mapRecommenders.put( strRecommender, recommender );
             AppLogService.info( "New Mahout Recommender registered '" + strRecommender + "'" );
         }
     }
@@ -108,18 +112,24 @@ public class RecommendationService
         try
         {
             AppLogService.info( "Initialize Mahout JDBC DataModel for Recommender '" + strName + "'" );
+
             String strKeyPrefix = PREFIX + strName;
             String strDataSource = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_DATASOURCE );
             AppLogService.info( "- DataSource = " + strDataSource );
+
             String strPrefTable = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_PREF_TABLE );
             AppLogService.info( "- Table = " + strPrefTable );
+
             String strUserIdColumn = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_USER_ID_COL );
             AppLogService.info( "- User ID Column = " + strUserIdColumn );
+
             String strItemIdColumn = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_ITEM_ID_COL );
             AppLogService.info( "- Item ID Column = " + strItemIdColumn );
+
             String strPrefColumn = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_PREF_COL );
             AppLogService.info( "- Pref Column = " + strPrefColumn );
-            PoolManager pm = AppConnectionService.getPoolManager();
+
+            PoolManager pm = AppConnectionService.getPoolManager(  );
             DataSource dataSource = pm.getDataSource( strDataSource );
 
             DataModel model = new MySQLJDBCDataModel( dataSource, strPrefTable, strUserIdColumn, strItemIdColumn,
@@ -137,6 +147,13 @@ public class RecommendationService
         return null;
     }
 
+    /**
+     *
+     * @param strRecommender
+     * @param lUserID
+     * @param nCount
+     * @return
+     */
     public List<RecommendedItem> getRecommendations( String strRecommender, long lUserID, int nCount )
     {
         UserBasedRecommender recommender = _mapRecommenders.get( strRecommender );
