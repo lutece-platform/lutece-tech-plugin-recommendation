@@ -1,25 +1,86 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version = "1.0" encoding = "UTF-8"?>
 <document>
-    <properties>
-        <title>Plugin recommendation</title>
-    </properties>
-    <body>
-        <section name="Plugin recommendation">
-            <!--
-            <p>
-                <img src="images/recommendation.png" />
-            </p>
-            -->
-            <subsection name="Introduction">
-                <p></p>
-            </subsection>
-            <subsection name="Configuration">
-                <p></p>
-            </subsection>
-            <subsection name="Usage">
-                <p></p>
-            </subsection>
-        </section>
-    </body>
-</document>
+     <properties>
+          <title> Plugin recommandation</title>
+     </properties>
+     <body>
+         <section name="Plugin recommendation">
+              <p>
+                 alimenté par
+                 <img src="images/mahout.png" />
+             </p>
+             <subsection name="Introduction">
+                 <p>
+                     Ce plugin fournit des recommandations basées sur la bibliothèque 
+                     d'apprentissage automatique proposée par le projet Apache Mahout 
+                     (Machine Learning).
+                 </p>
+             </subsection>
+             <subsection name="Configuration">
+                 <p>
+                     Ce plugin peut définir plusieurs recommandateurs.
+                 </p>
+                 <p>
+                     Les recommandateurs doivent charger un grand nombre de données pour être en mesure de fournir des recommandations (phase d'apprentissage).
+                     Chaque ensemble de données doit fournir ces informations:
+                     <ul>
+                         <li> L'ID utilisateur (type long) </li>
+                         <li> L'ID de l'objet (type long) </li>
+                         <li> Une valeur de préférence (type float) </li>
+                     </ul>
+                 </p>
+                 <p>
+                     Les recommandateurs doivent être définis dans le fichier <code><strong> recommendation.properties </strong></code> et
+                     pour chacun la source de données doit être définie (table et colonnes) comme ci-dessous:
+                 </p>
+                 <p>
+                     <div class="source">
+<pre> # recommendation.properties
 
+# Liste des prescripteurs
+recommendation.recommendersList = rec1, rec2
+
+# 1 recommender
+recommendation.recommender.rec1.dataSource = portail
+recommendation.recommender.rec1.preferenceTable = recommendation_default
+recommendation.recommender.rec1.userIDColumn = id_user
+recommendation.recommender.rec1.itemIDColumn = id_item
+recommendation.recommender.rec1.preferenceColumn = preference_value
+ 
+# Recommender 2
+recommendation.recommender.rec2.dataSource = portail
+...
+                 </pre>
+                     </div>
+                 </p>
+                    
+             </subsection>
+             <subsection name="Usage">
+                 <p> Les recommandateurs peuvent être fournis en Java par le <code><strong> RecommendationService </strong></code> </p>
+                
+                     <div class="source">
+<pre>
+liste &lt;RecommendedItem&gt; list = RecommendationService.instance () getRecommendations (strRecommender, lUserId, nCount);
+                 </pre>
+                     </div>
+                     <p> Ou via HTTP </p>
+                     <div class="source">
+<pre>
+http://myserver.com/servlet/plugins/recommendation/?id_user=2&amp;count=2&amp;recommender=test
+                 </pre>
+                     </div>
+                     <p>
+                         Les valeurs par défaut pour les paramètres <strong>recommender</strong> et <strong>count</strong>
+                         peuvent être définies de le fichier <code><strong>recommendation.properties</strong></code>. 
+                         L'url peut alors se limiter à :
+                     </p>
+                     <div class="source">
+<pre>
+http://myserver.com/servlet/plugins/recommendation/?id_user=2
+                 </pre>
+                     </div>
+
+             </subsection>
+         </section>
+     </body>
+</document>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2013, Mairie de Paris
+ * Copyright (c) 2002-2014, Mairie de Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ import javax.sql.DataSource;
 /**
  * RecommendationService
  */
-public class RecommendationService
+public final class RecommendationService
 {
     private static final String PROPERTY_LIST = "recommendation.recommendersList";
     private static final String PREFIX = "recommendation.recommender.";
@@ -73,26 +73,30 @@ public class RecommendationService
     private static Map<String, UserBasedRecommender> _mapRecommenders;
     private static RecommendationService _singleton;
 
+    /** Private constructor */
     private RecommendationService(  )
     {
     }
 
     /**
-     *
-     * @return
+     * Provides the unique instance
+     * @return the unique instance
      */
     public static synchronized RecommendationService instance(  )
     {
         if ( _singleton == null )
         {
             _singleton = new RecommendationService(  );
-            _singleton.init(  );
+            init(  );
         }
 
         return _singleton;
     }
 
-    private void init(  )
+    /**
+     * Initialize the service
+     */
+    private static void init(  )
     {
         _mapRecommenders = new HashMap<String, UserBasedRecommender>(  );
 
@@ -107,6 +111,37 @@ public class RecommendationService
         }
     }
 
+    /**
+     * Provides a list of recommended items for a given user based on a recommender
+     * @param strRecommender The recommender name
+     * @param lUserID The User's ID
+     * @param nCount The number of recommendation whished
+     * @return The list of recommended items
+     */
+    public List<RecommendedItem> getRecommendations( String strRecommender, long lUserID, int nCount )
+    {
+        UserBasedRecommender recommender = _mapRecommenders.get( strRecommender );
+
+        if ( recommender != null )
+        {
+            try
+            {
+                return recommender.recommend( lUserID, nCount );
+            }
+            catch ( TasteException ex )
+            {
+                AppLogService.error( "Error  getting recommendation : " + ex.getMessage(  ), ex );
+            }
+        }
+
+        return LIST_NO_RECOMMENDATION;
+    }
+
+    /**
+     * Initialize a recommender
+     * @param strName The recommender name
+     * @return The recommender
+     */
     private static UserBasedRecommender initRecommender( String strName )
     {
         try
@@ -145,31 +180,5 @@ public class RecommendationService
         }
 
         return null;
-    }
-
-    /**
-     *
-     * @param strRecommender
-     * @param lUserID
-     * @param nCount
-     * @return
-     */
-    public List<RecommendedItem> getRecommendations( String strRecommender, long lUserID, int nCount )
-    {
-        UserBasedRecommender recommender = _mapRecommenders.get( strRecommender );
-
-        if ( recommender != null )
-        {
-            try
-            {
-                return recommender.recommend( lUserID, nCount );
-            }
-            catch ( TasteException ex )
-            {
-                AppLogService.error( "Error  getting recommendation : " + ex.getMessage(  ), ex );
-            }
-        }
-
-        return LIST_NO_RECOMMENDATION;
     }
 }

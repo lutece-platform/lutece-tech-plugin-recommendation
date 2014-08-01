@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2013, Mairie de Paris
+ * Copyright (c) 2002-2014, Mairie de Paris
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,10 +35,11 @@ package fr.paris.lutece.plugins.recommendation.web;
 
 import fr.paris.lutece.plugins.recommendation.service.RecommendationService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
+import fr.paris.lutece.util.json.ErrorJsonResponse;
+import fr.paris.lutece.util.json.JsonResponse;
+import fr.paris.lutece.util.json.JsonUtil;
 
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
-
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
 
@@ -62,25 +63,13 @@ public class RecommendationServlet extends HttpServlet
     private static final String PROPERTY_DEFAULT_RECOMMENDER = "recommendation.default.recommender";
     private static final String PROPERTY_DEFAULT_COUNT = "recommendation.default.count";
     private static final String CONTENT_TYPE_JSON = "application/json";
-    private ObjectMapper _mapper;
 
     /**
-     * Initialize
-     * @throws ServletException
-     */
-    @Override
-    public void init(  ) throws ServletException
-    {
-        super.init(  );
-        _mapper = new ObjectMapper(  );
-    }
-
-    /**
-     *
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException
+     * Process GET and POST request
+     * @param request The request
+     * @param response The response
+     * @throws ServletException if an error occurs
+     * @throws IOException if an error occurs
      */
     @Override
     protected void service( HttpServletRequest request, HttpServletResponse response )
@@ -127,25 +116,37 @@ public class RecommendationServlet extends HttpServlet
         buildValidResponse( response, list );
     }
 
+    /**
+     * Build an error response
+     * @param response The response
+     * @param strMessage The message
+     * @throws IOException If an error occurs
+     */
     private void buildErrorResponse( HttpServletResponse response, String strMessage )
         throws IOException
     {
         response.setContentType( CONTENT_TYPE_JSON );
 
         ServletOutputStream out = response.getOutputStream(  );
-        ErrorResponse error = new ErrorResponse( strMessage );
-        out.println( _mapper.writeValueAsString( error ) );
+        ErrorJsonResponse error = new ErrorJsonResponse( strMessage );
+        out.println( JsonUtil.buildJsonResponse( error ) );
         out.close(  );
     }
 
+    /**
+     * Build a standard response
+     * @param response The response
+     * @param list The list of recommended items
+     * @throws IOException If an error occurs
+     */
     private void buildValidResponse( HttpServletResponse response, List<RecommendedItem> list )
         throws IOException
     {
         response.setContentType( CONTENT_TYPE_JSON );
 
         ServletOutputStream out = response.getOutputStream(  );
-        ValidResponse r = new ValidResponse( list );
-        out.println( _mapper.writeValueAsString( r ) );
+        JsonResponse r = new JsonResponse( list );
+        out.println( JsonUtil.buildJsonResponse( r ) );
         out.close(  );
     }
 }

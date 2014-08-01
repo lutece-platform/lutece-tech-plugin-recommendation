@@ -5,19 +5,78 @@
     </properties>
     <body>
         <section name="Plugin recommendation">
-            <!--
-            <p>
-                <img src="images/recommendation.png" />
+             <p>
+                Powered by 
+                <img src="images/mahout.png" />
             </p>
-            -->
             <subsection name="Introduction">
-                <p></p>
+                <p>
+                    This plugin provides recommendations based on machine learning library Apache Mahout.
+                </p>
             </subsection>
             <subsection name="Configuration">
-                <p></p>
+                <p>
+                    This plugin can defined multiple recommenders.
+                </p>
+                <p>
+                    Recommenders should load a large set of data to be able to provide recommendations (learning phase). 
+                    Each set of data should provide those information:
+                    <ul>
+                        <li>The user ID (as long)</li>
+                        <li>The item ID (as long)</li>
+                        <li>A preference value (as float)</li>
+                    </ul>
+                </p>
+                <p>
+                    Recommenders should be listed into the <code><strong>recommendation.properties</strong></code> file and for 
+                    each one the dataset source should be defined (table and columns) as below :
+                </p>
+                <p>
+                    <div class="source">
+<pre>#recommendation.properties
+
+# List of recommenders    
+recommendation.recommendersList=rec1,rec2
+
+# recommender 1
+recommendation.recommender.rec1.dataSource=portal
+recommendation.recommender.rec1.preferenceTable=recommendation_default
+recommendation.recommender.rec1.userIDColumn=id_user
+recommendation.recommender.rec1.itemIDColumn=id_item
+recommendation.recommender.rec1.preferenceColumn=preference_value
+ 
+# recommender 2  
+recommendation.recommender.rec2.dataSource=portal
+...    
+                </pre>                        
+                    </div>
+                </p>    
+                    
             </subsection>
             <subsection name="Usage">
-                <p></p>
+                <p>The recommendations can be provided in Java by the <code><strong>RecommendationService</strong></code></p>
+                
+                    <div class="source">
+<pre>
+List&lt;RecommendedItem&gt; list = RecommendationService.instance().getRecommendations( strRecommender, lUserId, nCount );
+                </pre>                        
+                    </div>
+                    <p>Or through HTTP</p>
+                    <div class="source">
+<pre>
+http://myserver.com/servlet/plugins/recommendation/?id_user=2&amp;count=2&amp;recommender=test
+                </pre>                        
+                    </div>
+                    <p>
+                        Default values for the recommender and the count parameters can be defined into 
+                        the <code><strong>recommendation.properties</strong></code> file, so the url can be limited to :
+                    </p>
+                    <div class="source">
+<pre>
+http://myserver.com/servlet/plugins/recommendation/?id_user=2
+                </pre>                        
+                    </div>
+
             </subsection>
         </section>
     </body>
