@@ -10,7 +10,7 @@
     <groupId>fr.paris.lutece.plugins</groupId>
     <artifactId>plugin-recommendation</artifactId>
     <packaging>lutece-plugin</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>Lutece recommendation plugin</name>
 
     <repositories>
@@ -51,6 +51,7 @@
         <connection>scm:git:https://github.com/lutece-platform/lutece-tech-plugin-recommendation.git</connection>
         <developerConnection>scm:git:https://github.com/lutece-platform/lutece-tech-plugin-recommendation.git</developerConnection>
         <url>https://github.com/lutece-platform/lutece-tech-plugin-recommendation.git</url>
-    </scm>
+      <tag>lutece-tech-plugin-recommendation-1.0.1</tag>
+  </scm>
 
 </project>
