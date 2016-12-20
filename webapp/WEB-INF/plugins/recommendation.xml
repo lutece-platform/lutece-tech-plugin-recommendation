@@ -10,7 +10,7 @@
     <provider>recommendation.plugin.provider</provider>
     <provider-url>http://dev.lutece.paris.fr</provider-url>
     <icon-url>images/admin/skin/plugins/recommendation/mahout_icon.png</icon-url>
-    <copyright>Copyright (c) 2014 Mairie de Paris</copyright>
+    <copyright>Copyright (c) 2017 Mairie de Paris</copyright>
     <db-pool-required>1</db-pool-required>
     
     <core-version-dependency>
