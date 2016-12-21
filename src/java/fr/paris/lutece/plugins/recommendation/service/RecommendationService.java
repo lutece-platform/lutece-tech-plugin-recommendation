@@ -61,6 +61,8 @@ import javax.sql.DataSource;
 import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
+import org.apache.mahout.cf.taste.impl.recommender.GenericBooleanPrefUserBasedRecommender;
+import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
 
 
@@ -77,8 +79,12 @@ public final class RecommendationService
     private static final String PROPERTY_USER_ID_COL = ".userIDColumn";
     private static final String PROPERTY_ITEM_ID_COL = ".itemIDColumn";
     private static final String PROPERTY_PREF_COL = ".preferenceColumn";
+    private static final String PROPERTY_RECOMMENDER = ".recommender";
     private static final String PROPERTY_THRESHOLD = ".threshold";
     private static final String DEFAULT_THRESHOLD = "0.1";
+    private static final int DEFAULT_RECOMMENDER = 0;
+    private static final int BOOLEAN_RECOMMENDER = 1;
+    
     private static final List<RecommendedItem> LIST_NO_RECOMMENDATION = new ArrayList<RecommendedItem>(  );
     private static Map<String, UserBasedRecommender> _mapRecommenders;
     private static RecommendationService _singleton;
@@ -205,14 +211,35 @@ public final class RecommendationService
                 model = new ReloadFromJDBCDataModel( modelDelegate );
 
             }
-            UserSimilarity similarity = new PearsonCorrelationSimilarity( model );
+            
             String strThreshold = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_THRESHOLD , DEFAULT_THRESHOLD );
             AppLogService.info( "- Threshold for recommender '" + strName + "' = " + strThreshold );
             double threshold = Double.valueOf( strThreshold );
-            UserNeighborhood neighborhood = new ThresholdUserNeighborhood( threshold , similarity, model );
-            
 
-            return new GenericUserBasedRecommender( model, neighborhood, similarity );
+            int nRecommender = AppPropertiesService.getPropertyInt( strKeyPrefix + PROPERTY_RECOMMENDER, DEFAULT_RECOMMENDER );
+            
+            UserSimilarity similarity;
+            UserNeighborhood neighborhood;
+            UserBasedRecommender recommender;
+            
+            
+            switch( nRecommender )
+            {
+                case BOOLEAN_RECOMMENDER:
+                similarity = new LogLikelihoodSimilarity( model );
+                neighborhood = new ThresholdUserNeighborhood( threshold , similarity, model );
+                recommender = new GenericBooleanPrefUserBasedRecommender( model , neighborhood , similarity );
+                break;
+            
+                case DEFAULT_RECOMMENDER:
+                default:
+                similarity = new PearsonCorrelationSimilarity( model );
+                neighborhood = new ThresholdUserNeighborhood( threshold , similarity, model );
+                recommender = new GenericUserBasedRecommender( model, neighborhood, similarity );
+                break;
+                
+            }
+            return recommender;
         }
         catch ( TasteException | IOException ex )
         {
