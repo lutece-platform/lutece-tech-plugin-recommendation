@@ -35,6 +35,7 @@ package fr.paris.lutece.plugins.recommendation.service;
 
 import fr.paris.lutece.portal.service.database.AppConnectionService;
 import fr.paris.lutece.portal.service.util.AppLogService;
+import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.util.pool.PoolManager;
 import java.io.File;
@@ -73,6 +74,8 @@ public final class RecommendationService
     private static final String PROPERTY_USER_ID_COL = ".userIDColumn";
     private static final String PROPERTY_ITEM_ID_COL = ".itemIDColumn";
     private static final String PROPERTY_PREF_COL = ".preferenceColumn";
+    private static final String PROPERTY_THRESHOLD = ".threshold";
+    private static final String DEFAULT_THRESHOLD = "0.1";
     private static final List<RecommendedItem> LIST_NO_RECOMMENDATION = new ArrayList<RecommendedItem>(  );
     private static Map<String, UserBasedRecommender> _mapRecommenders;
     private static RecommendationService _singleton;
@@ -160,7 +163,8 @@ public final class RecommendationService
             if( strFile != null )
             {
                 AppLogService.info( "- Loading data from file = " + strFile );
-                model = new FileDataModel(new File( strFile ));
+                String strPath = AppPathService.getAbsolutePathFromRelativePath( strFile );
+                model = new FileDataModel( new File( strPath ) );
             }
             else
             {
@@ -188,7 +192,10 @@ public final class RecommendationService
 
             }
             UserSimilarity similarity = new PearsonCorrelationSimilarity( model );
-            UserNeighborhood neighborhood = new ThresholdUserNeighborhood( 3.0, similarity, model );
+            String strThreshold = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_THRESHOLD , DEFAULT_THRESHOLD );
+            AppLogService.info( "- Threshold = " + strThreshold );
+            double threshold = Double.valueOf( strThreshold );
+            UserNeighborhood neighborhood = new ThresholdUserNeighborhood( threshold , similarity, model );
             
 
             return new GenericUserBasedRecommender( model, neighborhood, similarity );
