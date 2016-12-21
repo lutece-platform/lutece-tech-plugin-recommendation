@@ -32,13 +32,12 @@
  * License 1.0
  */
 
-
 package fr.paris.lutece.plugins.recommendation.service;
 
 /**
  * NoRecommenderException
  */
-public class NoRecommenderException extends Exception 
+public class NoRecommenderException extends Exception
 {
     public NoRecommenderException( String strMessage )
     {

@@ -65,7 +65,6 @@ import org.apache.mahout.cf.taste.impl.recommender.GenericBooleanPrefUserBasedRe
 import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
 
-
 /**
  * RecommendationService
  */
@@ -84,26 +83,27 @@ public final class RecommendationService
     private static final String DEFAULT_THRESHOLD = "0.1";
     private static final int DEFAULT_RECOMMENDER = 0;
     private static final int BOOLEAN_RECOMMENDER = 1;
-    
-    private static final List<RecommendedItem> LIST_NO_RECOMMENDATION = new ArrayList<RecommendedItem>(  );
+
+    private static final List<RecommendedItem> LIST_NO_RECOMMENDATION = new ArrayList<RecommendedItem>( );
     private static Map<String, UserBasedRecommender> _mapRecommenders;
     private static RecommendationService _singleton;
 
     /** Private constructor */
-    private RecommendationService(  )
+    private RecommendationService( )
     {
     }
 
     /**
      * Provides the unique instance
+     * 
      * @return the unique instance
      */
-    public static synchronized RecommendationService instance(  )
+    public static synchronized RecommendationService instance( )
     {
         if ( _singleton == null )
         {
-            _singleton = new RecommendationService(  );
-            init(  );
+            _singleton = new RecommendationService( );
+            init( );
         }
 
         return _singleton;
@@ -112,29 +112,35 @@ public final class RecommendationService
     /**
      * Initialize the service
      */
-    private static void init(  )
+    private static void init( )
     {
-        _mapRecommenders = new HashMap<String, UserBasedRecommender>(  );
+        _mapRecommenders = new HashMap<String, UserBasedRecommender>( );
 
         String strList = AppPropertiesService.getProperty( PROPERTY_LIST );
-        String[] recommenders = strList.split( "," );
+        String [ ] recommenders = strList.split( "," );
 
         for ( String strRecommender : recommenders )
         {
-            UserBasedRecommender recommender = initRecommender( strRecommender.trim(  ) );
-            _mapRecommenders.put( strRecommender.trim(), recommender );
+            UserBasedRecommender recommender = initRecommender( strRecommender.trim( ) );
+            _mapRecommenders.put( strRecommender.trim( ), recommender );
             AppLogService.info( "New Mahout Recommender registered '" + strRecommender + "'" );
         }
     }
 
     /**
      * Provides a list of recommended items for a given user based on a recommender
-     * @param strRecommender The recommender name
-     * @param lUserID The User's ID
-     * @param nCount The number of recommendation whished
+     * 
+     * @param strRecommender
+     *            The recommender name
+     * @param lUserID
+     *            The User's ID
+     * @param nCount
+     *            The number of recommendation whished
      * @return The list of recommended items
-     * @throws NoSuchUserException if no user was found
-     * @throws NoRecommenderException if no recommender was found
+     * @throws NoSuchUserException
+     *             if no user was found
+     * @throws NoRecommenderException
+     *             if no recommender was found
      */
     public List<RecommendedItem> getRecommendations( String strRecommender, long lUserID, int nCount ) throws NoSuchUserException, NoRecommenderException
     {
@@ -146,13 +152,13 @@ public final class RecommendationService
             {
                 return recommender.recommend( lUserID, nCount );
             }
-            catch ( TasteException ex )
+            catch( TasteException ex )
             {
-                if( ex instanceof NoSuchUserException )
+                if ( ex instanceof NoSuchUserException )
                 {
                     throw (NoSuchUserException) ex;
                 }
-                AppLogService.error( "Error  getting recommendation : " + ex.getMessage(  ), ex );
+                AppLogService.error( "Error  getting recommendation : " + ex.getMessage( ), ex );
             }
         }
         else
@@ -165,21 +171,23 @@ public final class RecommendationService
 
     /**
      * Initialize a recommender
-     * @param strName The recommender name
+     * 
+     * @param strName
+     *            The recommender name
      * @return The recommender
      */
-    private static UserBasedRecommender initRecommender( String strName ) 
+    private static UserBasedRecommender initRecommender( String strName )
     {
         try
         {
             AppLogService.info( "Initialize Mahout DataModel for Recommender '" + strName + "'" );
 
             String strKeyPrefix = PREFIX + strName;
-            
+
             String strFile = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_DATA_FILE );
             DataModel model;
-            
-            if( strFile != null )
+
+            if ( strFile != null )
             {
                 AppLogService.info( "- Loading data from file = " + strFile );
                 String strPath = AppPathService.getAbsolutePathFromRelativePath( strFile );
@@ -202,48 +210,45 @@ public final class RecommendationService
                 String strPrefColumn = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_PREF_COL );
                 AppLogService.info( "- Pref Column = " + strPrefColumn );
 
-                PoolManager pm = AppConnectionService.getPoolManager(  );
+                PoolManager pm = AppConnectionService.getPoolManager( );
                 DataSource dataSource = pm.getDataSource( strDataSource );
 
-
-                JDBCDataModel modelDelegate = new MySQLJDBCDataModel( dataSource, strPrefTable, strUserIdColumn, strItemIdColumn,
-                        strPrefColumn, null );
+                JDBCDataModel modelDelegate = new MySQLJDBCDataModel( dataSource, strPrefTable, strUserIdColumn, strItemIdColumn, strPrefColumn, null );
                 model = new ReloadFromJDBCDataModel( modelDelegate );
 
             }
-            
-            String strThreshold = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_THRESHOLD , DEFAULT_THRESHOLD );
+
+            String strThreshold = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_THRESHOLD, DEFAULT_THRESHOLD );
             AppLogService.info( "- Threshold for recommender '" + strName + "' = " + strThreshold );
             double threshold = Double.valueOf( strThreshold );
 
             int nRecommender = AppPropertiesService.getPropertyInt( strKeyPrefix + PROPERTY_RECOMMENDER, DEFAULT_RECOMMENDER );
-            
+
             UserSimilarity similarity;
             UserNeighborhood neighborhood;
             UserBasedRecommender recommender;
-            
-            
+
             switch( nRecommender )
             {
                 case BOOLEAN_RECOMMENDER:
-                similarity = new LogLikelihoodSimilarity( model );
-                neighborhood = new ThresholdUserNeighborhood( threshold , similarity, model );
-                recommender = new GenericBooleanPrefUserBasedRecommender( model , neighborhood , similarity );
-                break;
-            
+                    similarity = new LogLikelihoodSimilarity( model );
+                    neighborhood = new ThresholdUserNeighborhood( threshold, similarity, model );
+                    recommender = new GenericBooleanPrefUserBasedRecommender( model, neighborhood, similarity );
+                    break;
+
                 case DEFAULT_RECOMMENDER:
                 default:
-                similarity = new PearsonCorrelationSimilarity( model );
-                neighborhood = new ThresholdUserNeighborhood( threshold , similarity, model );
-                recommender = new GenericUserBasedRecommender( model, neighborhood, similarity );
-                break;
-                
+                    similarity = new PearsonCorrelationSimilarity( model );
+                    neighborhood = new ThresholdUserNeighborhood( threshold, similarity, model );
+                    recommender = new GenericUserBasedRecommender( model, neighborhood, similarity );
+                    break;
+
             }
             return recommender;
         }
-        catch ( TasteException | IOException ex )
+        catch( TasteException | IOException ex )
         {
-            AppLogService.error( "Error loading recommender : " + ex.getMessage(  ), ex );
+            AppLogService.error( "Error loading recommender : " + ex.getMessage( ), ex );
         }
 
         return null;

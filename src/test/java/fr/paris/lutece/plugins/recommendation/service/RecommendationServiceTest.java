@@ -41,7 +41,6 @@ import org.junit.Test;
 
 import java.util.List;
 
-
 /**
  *
  * @author pierre
@@ -52,14 +51,14 @@ public class RecommendationServiceTest extends LuteceTestCase
      * Test of getRecommendations method, of class RecommendationService.
      */
     @Test
-    public void testGetRecommendations(  )
+    public void testGetRecommendations( )
     {
         System.out.println( "getRecommendations" );
 
         String strRecommender = "test";
         long lUserID = 2L;
         int nCount = 3;
-        RecommendationService instance = RecommendationService.instance(  );
+        RecommendationService instance = RecommendationService.instance( );
         List<RecommendedItem> recommendations = instance.getRecommendations( strRecommender, lUserID, nCount );
 
         for ( RecommendedItem recommendation : recommendations )

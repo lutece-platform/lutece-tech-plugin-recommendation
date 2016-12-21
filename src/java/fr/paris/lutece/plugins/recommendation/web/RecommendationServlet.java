@@ -54,7 +54,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.mahout.cf.taste.common.NoSuchUserException;
 
-
 /**
  * Recommendation Servlet
  */
@@ -69,14 +68,18 @@ public class RecommendationServlet extends HttpServlet
 
     /**
      * Process GET and POST request
-     * @param request The request
-     * @param response The response
-     * @throws ServletException if an error occurs
-     * @throws IOException if an error occurs
+     * 
+     * @param request
+     *            The request
+     * @param response
+     *            The response
+     * @throws ServletException
+     *             if an error occurs
+     * @throws IOException
+     *             if an error occurs
      */
     @Override
-    protected void service( HttpServletRequest request, HttpServletResponse response )
-        throws ServletException, IOException
+    protected void service( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException
     {
         String strRecommender = request.getParameter( PARAMETER_RECOMMENDER );
         String strUserId = request.getParameter( PARAMETER_USER_ID );
@@ -94,7 +97,7 @@ public class RecommendationServlet extends HttpServlet
 
         if ( strUserId == null )
         {
-            buildErrorResponse( response, "USER_ID_MISSING" , "Invalid request : Parameter '" + PARAMETER_USER_ID + "' is missing!" );
+            buildErrorResponse( response, "USER_ID_MISSING", "Invalid request : Parameter '" + PARAMETER_USER_ID + "' is missing!" );
             AppLogService.error( "RecommendationServlet : user ID is missing in the request" );
 
             return;
@@ -108,31 +111,30 @@ public class RecommendationServlet extends HttpServlet
             lUserId = Long.parseLong( strUserId );
             nCount = Integer.parseInt( strCount );
         }
-        catch ( NumberFormatException e )
+        catch( NumberFormatException e )
         {
             buildErrorResponse( response, "INVALID_PARAMETER_VALUE", "Invalid request : invalid numeric parameter!" );
-            AppLogService.error( "RecommendationServlet : invalid numeric parameter : " + e.getMessage() );
+            AppLogService.error( "RecommendationServlet : invalid numeric parameter : " + e.getMessage( ) );
 
             return;
         }
 
-        List<RecommendedItem> list ;
+        List<RecommendedItem> list;
         try
         {
-            list = RecommendationService.instance(  )
-                    .getRecommendations( strRecommender, lUserId, nCount );
+            list = RecommendationService.instance( ).getRecommendations( strRecommender, lUserId, nCount );
         }
         catch( NoSuchUserException ex )
         {
             buildErrorResponse( response, "USER_NOT_FOUND", "User not found : invalid user ID!" );
             AppLogService.error( "RecommendationServlet : user not found : " + strUserId );
             return;
-           
+
         }
         catch( NoRecommenderException ex )
         {
-            buildErrorResponse( response, "RECOMMENDER_NOT_FOUND", ex.getMessage() );
-            AppLogService.error( "RecommendationServlet : " + ex.getMessage() );
+            buildErrorResponse( response, "RECOMMENDER_NOT_FOUND", ex.getMessage( ) );
+            AppLogService.error( "RecommendationServlet : " + ex.getMessage( ) );
             return;
         }
         buildValidResponse( response, list );
@@ -140,36 +142,43 @@ public class RecommendationServlet extends HttpServlet
 
     /**
      * Build an error response
-     * @param response The response
-     * @param strCode The error message
-     * @param strMessage The message
-     * @throws IOException If an error occurs
+     * 
+     * @param response
+     *            The response
+     * @param strCode
+     *            The error message
+     * @param strMessage
+     *            The message
+     * @throws IOException
+     *             If an error occurs
      */
-    private void buildErrorResponse( HttpServletResponse response, String strCode , String strMessage )
-        throws IOException
+    private void buildErrorResponse( HttpServletResponse response, String strCode, String strMessage ) throws IOException
     {
         response.setContentType( CONTENT_TYPE_JSON );
 
-        ServletOutputStream out = response.getOutputStream(  );
-        ErrorJsonResponse error = new ErrorJsonResponse( strCode , strMessage );
+        ServletOutputStream out = response.getOutputStream( );
+        ErrorJsonResponse error = new ErrorJsonResponse( strCode, strMessage );
         out.println( JsonUtil.buildJsonResponse( error ) );
-        out.close(  );
+        out.close( );
     }
 
     /**
      * Build a standard response
-     * @param response The response
-     * @param list The list of recommended items
-     * @throws IOException If an error occurs
+     * 
+     * @param response
+     *            The response
+     * @param list
+     *            The list of recommended items
+     * @throws IOException
+     *             If an error occurs
      */
-    private void buildValidResponse( HttpServletResponse response, List<RecommendedItem> list )
-        throws IOException
+    private void buildValidResponse( HttpServletResponse response, List<RecommendedItem> list ) throws IOException
     {
         response.setContentType( CONTENT_TYPE_JSON );
 
-        ServletOutputStream out = response.getOutputStream(  );
+        ServletOutputStream out = response.getOutputStream( );
         JsonResponse r = new JsonResponse( list );
         out.println( JsonUtil.buildJsonResponse( r ) );
-        out.close(  );
+        out.close( );
     }
 }
