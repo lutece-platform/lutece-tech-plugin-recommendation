@@ -60,6 +60,8 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
+import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
+import org.apache.mahout.cf.taste.model.JDBCDataModel;
 
 
 /**
@@ -198,8 +200,9 @@ public final class RecommendationService
                 DataSource dataSource = pm.getDataSource( strDataSource );
 
 
-                model = new MySQLJDBCDataModel( dataSource, strPrefTable, strUserIdColumn, strItemIdColumn,
+                JDBCDataModel modelDelegate = new MySQLJDBCDataModel( dataSource, strPrefTable, strUserIdColumn, strItemIdColumn,
                         strPrefColumn, null );
+                model = new ReloadFromJDBCDataModel( modelDelegate );
 
             }
             UserSimilarity similarity = new PearsonCorrelationSimilarity( model );
