@@ -33,7 +33,9 @@
  */
 package fr.paris.lutece.plugins.recommendation.web;
 
+import fr.paris.lutece.plugins.recommendation.service.NoRecommenderException;
 import fr.paris.lutece.plugins.recommendation.service.RecommendationService;
+import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import fr.paris.lutece.util.json.ErrorJsonResponse;
 import fr.paris.lutece.util.json.JsonResponse;
@@ -50,6 +52,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.mahout.cf.taste.common.NoSuchUserException;
 
 
 /**
@@ -91,7 +94,8 @@ public class RecommendationServlet extends HttpServlet
 
         if ( strUserId == null )
         {
-            buildErrorResponse( response, "Invalid request : Parameter '" + PARAMETER_USER_ID + "' is missing!" );
+            buildErrorResponse( response, "USER_ID_MISSING" , "Invalid request : Parameter '" + PARAMETER_USER_ID + "' is missing!" );
+            AppLogService.error( "RecommendationServlet : user ID is missing in the request" );
 
             return;
         }
@@ -106,29 +110,48 @@ public class RecommendationServlet extends HttpServlet
         }
         catch ( NumberFormatException e )
         {
-            buildErrorResponse( response, "Invalid request : invalid numeric parameter!" );
+            buildErrorResponse( response, "INVALID_PARAMETER_VALUE", "Invalid request : invalid numeric parameter!" );
+            AppLogService.error( "RecommendationServlet : invalid numeric parameter : " + e.getMessage() );
 
             return;
         }
 
-        List<RecommendedItem> list = RecommendationService.instance(  )
-                                                          .getRecommendations( strRecommender, lUserId, nCount );
+        List<RecommendedItem> list ;
+        try
+        {
+            list = RecommendationService.instance(  )
+                    .getRecommendations( strRecommender, lUserId, nCount );
+        }
+        catch( NoSuchUserException ex )
+        {
+            buildErrorResponse( response, "USER_NOT_FOUND", "User not found : invalid user ID!" );
+            AppLogService.error( "RecommendationServlet : user not found : " + strUserId );
+            return;
+           
+        }
+        catch( NoRecommenderException ex )
+        {
+            buildErrorResponse( response, "RECOMMENDER_NOT_FOUND", ex.getMessage() );
+            AppLogService.error( "RecommendationServlet : " + ex.getMessage() );
+            return;
+        }
         buildValidResponse( response, list );
     }
 
     /**
      * Build an error response
      * @param response The response
+     * @param strCode The error message
      * @param strMessage The message
      * @throws IOException If an error occurs
      */
-    private void buildErrorResponse( HttpServletResponse response, String strMessage )
+    private void buildErrorResponse( HttpServletResponse response, String strCode , String strMessage )
         throws IOException
     {
         response.setContentType( CONTENT_TYPE_JSON );
 
         ServletOutputStream out = response.getOutputStream(  );
-        ErrorJsonResponse error = new ErrorJsonResponse( strMessage );
+        ErrorJsonResponse error = new ErrorJsonResponse( strCode , strMessage );
         out.println( JsonUtil.buildJsonResponse( error ) );
         out.close(  );
     }

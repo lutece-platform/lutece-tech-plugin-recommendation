@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
+import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 
 
@@ -113,7 +114,7 @@ public final class RecommendationService
         for ( String strRecommender : recommenders )
         {
             UserBasedRecommender recommender = initRecommender( strRecommender.trim(  ) );
-            _mapRecommenders.put( strRecommender, recommender );
+            _mapRecommenders.put( strRecommender.trim(), recommender );
             AppLogService.info( "New Mahout Recommender registered '" + strRecommender + "'" );
         }
     }
@@ -124,8 +125,10 @@ public final class RecommendationService
      * @param lUserID The User's ID
      * @param nCount The number of recommendation whished
      * @return The list of recommended items
+     * @throws NoSuchUserException if no user was found
+     * @throws NoRecommenderException if no recommender was found
      */
-    public List<RecommendedItem> getRecommendations( String strRecommender, long lUserID, int nCount )
+    public List<RecommendedItem> getRecommendations( String strRecommender, long lUserID, int nCount ) throws NoSuchUserException, NoRecommenderException
     {
         UserBasedRecommender recommender = _mapRecommenders.get( strRecommender );
 
@@ -137,8 +140,16 @@ public final class RecommendationService
             }
             catch ( TasteException ex )
             {
+                if( ex instanceof NoSuchUserException )
+                {
+                    throw (NoSuchUserException) ex;
+                }
                 AppLogService.error( "Error  getting recommendation : " + ex.getMessage(  ), ex );
             }
+        }
+        else
+        {
+            throw new NoRecommenderException( "Recommender not found" );
         }
 
         return LIST_NO_RECOMMENDATION;
@@ -193,7 +204,7 @@ public final class RecommendationService
             }
             UserSimilarity similarity = new PearsonCorrelationSimilarity( model );
             String strThreshold = AppPropertiesService.getProperty( strKeyPrefix + PROPERTY_THRESHOLD , DEFAULT_THRESHOLD );
-            AppLogService.info( "- Threshold = " + strThreshold );
+            AppLogService.info( "- Threshold for recommender '" + strName + "' = " + strThreshold );
             double threshold = Double.valueOf( strThreshold );
             UserNeighborhood neighborhood = new ThresholdUserNeighborhood( threshold , similarity, model );
             
