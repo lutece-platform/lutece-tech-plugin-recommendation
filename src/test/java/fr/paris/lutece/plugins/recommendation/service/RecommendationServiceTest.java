@@ -51,7 +51,7 @@ public class RecommendationServiceTest extends LuteceTestCase
      * Test of getRecommendations method, of class RecommendationService.
      */
     @Test
-    public void testGetRecommendations( )
+    public void testGetRecommendations( ) throws Exception
     {
         System.out.println( "getRecommendations" );
 
